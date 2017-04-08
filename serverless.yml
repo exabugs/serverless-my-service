@@ -70,6 +70,8 @@ functions:
   connect:
 #    handler: handler.hello
     handler: build_queue_jobs.handler
+#    memorySize: 256
+    timeout: 60
     environment:
       AWS_BUCKET: jp.co.dreamarts.jcomsurvey-stg
 
