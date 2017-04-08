@@ -4,8 +4,6 @@ const _ = require('underscore');
 
 const config = require('./config');
 
-// const MongoClient = mongodb.MongoClient;
-// const mongoUrl = 'mongodb://localhost:27017/';
 
 const dbconfig = [
   // '10.10.3.11:30011',
@@ -55,28 +53,21 @@ const within = (date, minutes) => {
 };
 
 const exec = ({ db, TYPE, job_exec }, callback) => {
+
+  const params = {};
+
   async.waterfall([
     (next) => {
-      const params = {
-        db: db.db(config.db.survey)
-      };
-      next(null, params);
+      params.db = db.db(config.db.survey);
+
+      // create index
+      const index = [['type', 1], ['status', 1], ['valid', 1]];
+      params.db.createIndex(COLLECTION.queues, index);
+
+      next(null);
     },
-    // // 0. DB 接続
-    // (params, next) => {
-    //   MongoClient.connect(mongoUrl, function(err, mongo) {
-    //     if (err) {
-    //       next(err);
-    //     } else {
-    //       params.db = mongo.db(config.db.survey);
-    //       const index = [['type', 1], ['status', 1], ['valid', 1]];
-    //       params.db.createIndex(COLLECTION.queues, index);
-    //       next(err, params);
-    //     }
-    //   });
-    // },
     // 1. キューの読み込みとステータス変更
-    (params, next) => {
+    (next) => {
       const queues = params.db.collection(COLLECTION.queues);
       const status = [STATUS.TODO, STATUS.DOING];
       const cond = { type: TYPE, status: { $in: status }, valid: 1 };
@@ -108,7 +99,7 @@ const exec = ({ db, TYPE, job_exec }, callback) => {
                   params.queue = queue;
                   params.user = queue.createdBy;
                   params.owner = queue.owner;
-                  next(null, params);
+                  next(null);
                 }
               });
             }
@@ -117,14 +108,14 @@ const exec = ({ db, TYPE, job_exec }, callback) => {
       });
     },
     // 2. 実際のジョブ処理
-    (params, next) => {
-      job_exec(params, (error, params) => {
+    (next) => {
+      job_exec(params, (error) => {
         params.error = error;
-        next(null, params);
+        next(null);
       });
     },
     // 3. キュー書き戻し
-    (params, next) => {
+    (next) => {
       const queues = params.db.collection(COLLECTION.queues);
       const data = {
         status: params.err ? STATUS.FAILED : STATUS.DONE,
@@ -141,13 +132,13 @@ const exec = ({ db, TYPE, job_exec }, callback) => {
               next(err);
             } else {
               params.queue = queue;
-              next(null, params);
+              next(null);
             }
           });
         }
       });
     },
-  ], function(err, params) {
+  ], function(err) {
     if (err) {
       if (err.type) {
         log(err, null);
@@ -176,14 +167,15 @@ const log = (info, error) => {
 exports.handler = (event, context, callback) => {
 
   // ジョブのタイプを引数で指定する
-// jobs/ ディレクトリに、その名前で処理を書いておく
-//   const TYPE = process.argv[2];
+  // jobs/ ディレクトリに、その名前で処理を書いておく
+  //   const TYPE = process.argv[2];
   const TYPE = 'AnswerOutput';
 
   if (!TYPE) {
     return context.fail('job key not speified.');
   }
-// ジョブの処理はコレ！
+
+  // ジョブの処理はコレ！
   const job_exec = require('./jobs/' + TYPE);
 
   connect(dbconfig, db => {
@@ -191,6 +183,7 @@ exports.handler = (event, context, callback) => {
       return context.fail('Cant connect DB.');
     } else {
       exec({ db, TYPE, job_exec }, err => {
+        // close しないとプロセスが終了しない
         db.close();
 
         console.log('finished');
