@@ -67,7 +67,8 @@ provider:
 functions:
 
   connect:
-    handler: connect.handler
+#    handler: handler.hello
+    handler: build_queue_jobs.handler
     environment:
       AWS_BUCKET: jp.co.dreamarts.jcomsurvey-stg
 
