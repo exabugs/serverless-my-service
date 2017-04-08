@@ -31,7 +31,7 @@ const STATUS = {
 const connect = (addrs, callback) => {
   async.detectSeries(addrs, (addr, next) => {
     const url = 'mongodb://' + addr + '/';
-    const options = { connectTimeoutMS: 100 };
+    const options = { connectTimeoutMS: 500 };
     mongodb.MongoClient.connect(url, options, (err, db) => {
       if (err) {
         console.log(err);

@@ -166,7 +166,7 @@ const xlsx = ({ recordsArray, file, DELIMITER = ',' }) => {
 
   /* write file */
   XLSX.writeFile(wb, path);
-  XLSX.writeFile(wb, 'test.xlsx');
+  //XLSX.writeFile(wb, 'test.xlsx');
 };
 
 
