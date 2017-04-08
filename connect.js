@@ -2,8 +2,9 @@ const mongodb = require('mongodb');
 const async = require('async');
 
 const dbconfig = [
-  '10.10.3.11:30011',
-  '10.10.4.12:30012',
+  // '10.10.3.11:30011',
+  // '10.10.4.12:30012',
+  '10.10.3.195:27017'
 ];
 
 const connect = (addrs, callback) => {

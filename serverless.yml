@@ -68,6 +68,8 @@ functions:
 
   connect:
     handler: connect.handler
+    environment:
+      AWS_BUCKET: jp.co.dreamarts.jcomsurvey-stg
 
   hello:
     handler: handler.hello
