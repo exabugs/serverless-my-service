@@ -28,7 +28,7 @@ const keyPrivate = fs.readFileSync('./_key/survey', 'utf8');
 const privateKey = ursa.createPrivateKey(keyPrivate);
 
 const DELIMITER = "," // カンマ
-//var DELIMITER = "\n" // 改行
+//const DELIMITER = "\n" // 改行
 
 const contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -122,7 +122,7 @@ const gatherEvents = (db, _events, callback) => {
   }, (err) => {
     callback(err, params);
   });
-}
+};
 
 const ownerCond = (cond, group, callback) => {
   if (group && group._id) {
@@ -188,11 +188,11 @@ const fullfill = (db, obj, infos, _cache, callback) => {
   }, err => {
     callback(err);
   });
-}
+};
 
 function setAnsert(template, answer, map, record) {
   answer.forEach(a => {
-    var q = map[a.questionId];
+    const q = map[a.questionId];
     if (q) {
       record[q.i + 0] = a.values;
       if (q.q && q.q.otherOn) {
@@ -309,7 +309,7 @@ module.exports = (params, callback) => {
                       next(err);
                     } else {
                       // 基本情報
-                      var record = basicinfos.map(info => get(src, info));
+                      const record = basicinfos.map(info => get(src, info));
 
                       async.waterfall([
                         (next) => {
@@ -417,7 +417,7 @@ module.exports = (params, callback) => {
                     return next(null, params);
                   } else {
                     if (src.answer) {
-                      var record = [src._id];
+                      const record = [src._id];
                       // 可変部分
                       setAnsert(template, src.answer, map, record);
                       records.push(record);
