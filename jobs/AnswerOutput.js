@@ -20,15 +20,15 @@ const COLLECTION = {
   templates: 'surveytemplates',
   questions: 'surveyquestions',
   answers: 'surveyanswers',
-}
+};
 
 const timezone = 'Asia/Tokyo';
 
 const keyPrivate = fs.readFileSync('./_key/survey', 'utf8');
 const privateKey = ursa.createPrivateKey(keyPrivate);
 
-const DELIMITER = "," // カンマ
-//const DELIMITER = "\n" // 改行
+const DELIMITER = ","; // カンマ
+//const DELIMITER = "\n"; // 改行
 
 const contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -60,7 +60,7 @@ const gatherQuestions = (db, template, exclude, callback) => {
         questions.findOne({ _id: q._id }, (err, _q) => {
           if (_q.type !== 'view') {
             const i = titles.length;
-            map[_q._id] = { q: _q, i }
+            map[_q._id] = { q: _q, i };
             titles.push(_q.exportTitle); // タイトル行
             type.push(_q.type);
             if (_q.otherOn) {
@@ -85,7 +85,7 @@ const gatherQuestions = (db, template, exclude, callback) => {
   } else {
     callback(null);
   }
-}
+};
 
 const gatherEvents = (db, _events, callback) => {
   const events = db.collection(COLLECTION.events);
@@ -162,7 +162,7 @@ const get = (obj, info) => {
     return '';
   }
 
-}
+};
 
 // _id しかないフィールドに値をうめる
 const fullfill = (db, obj, infos, _cache, callback) => {
@@ -276,7 +276,7 @@ module.exports = (params, callback) => {
         ];
 
         const cond = [].concat(params.cond);
-        const events = _.map(params.events, event => event._id)
+        const events = _.map(params.events, event => event._id);
         if (0 < events.length) {
           cond.push({ 'event._id': { $in: events } });
         }
