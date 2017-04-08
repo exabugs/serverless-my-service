@@ -15,7 +15,7 @@ const dbconfig = [
 ];
 
 
-const queueServerId = 'batch server';
+const queueServerId = 'Lambda';
 
 
 const COLLECTION = {
