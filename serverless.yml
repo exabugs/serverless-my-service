@@ -31,6 +31,10 @@ provider:
     subnetIds:
       - subnet-1ab0456d
       - subnet-60373e26
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action: "s3:*"
+      Resource: "*"
 
 # you can overwrite defaults here
 #  stage: dev

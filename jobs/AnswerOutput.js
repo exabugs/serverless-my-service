@@ -3,7 +3,6 @@ const async = require('async');
 const _ = require('underscore');
 const fs = require('fs');
 const moment = require('moment-timezone');
-const ursa = require('ursa');
 const exec = require('child_process').exec;
 
 const utils = require('./utils');
@@ -24,8 +23,6 @@ const COLLECTION = {
 
 const timezone = 'Asia/Tokyo';
 
-const keyPrivate = fs.readFileSync('./_key/survey', 'utf8');
-const privateKey = ursa.createPrivateKey(keyPrivate);
 
 const DELIMITER = ","; // カンマ
 //const DELIMITER = "\n"; // 改行
@@ -131,7 +128,7 @@ const ownerCond = (cond, group, callback) => {
   }
 };
 
-const get = (obj, info) => {
+const get = (obj, info, privateKey) => {
   const { key, encrypted, type } = info;
   if (!key.length) return '';
   const ret = key.reduce((memo, _key) => {
@@ -208,6 +205,7 @@ module.exports = (params, callback) => {
 
   async.waterfall([
       (next) => {
+
         params.cond = [{ valid: 1 }]; // 回答検索条件
         next(null, params);
       },
@@ -309,7 +307,7 @@ module.exports = (params, callback) => {
                       next(err);
                     } else {
                       // 基本情報
-                      const record = basicinfos.map(info => get(src, info));
+                      const record = basicinfos.map(info => get(src, info, params.privateKey));
 
                       async.waterfall([
                         (next) => {
@@ -482,7 +480,7 @@ module.exports = (params, callback) => {
         const name = buff.pop();
         const cwd = buff.join('/');
 
-        exec(`zip ${zip} ${name} ${arg}`, { cwd }, (err) => {
+        exec(`${params.bin}/zip ${zip} ${name} ${arg}`, { cwd }, (err) => {
           if (err) {
             next(err);
           } else {

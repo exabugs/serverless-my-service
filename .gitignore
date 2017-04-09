@@ -1,5 +1,8 @@
 # package directories
 node_modules
+!bin/Linux/node_modules
+!bin/Darwin/node_modules
+
 jspm_packages
 
 # Serverless directories

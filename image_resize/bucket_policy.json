@@ -1,0 +1,19 @@
+{
+  "Version": "2012-10-17",
+  "Id": "Policy1486109664657",
+  "Statement": [
+    {
+      "Sid": "Stmt1486109661802",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::521185453080:role/lambda_resize_image"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::jp.co.dreamarts.jcomsurvey2/*"
+    }
+  ]
+}

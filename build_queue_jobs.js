@@ -1,20 +1,14 @@
+const aws = require('aws-sdk');
 const mongodb = require('mongodb');
 const async = require('async');
 const _ = require('underscore');
-
+const os = require('os');
+const fs = require('fs');
 const config = require('./config');
 
-
-const dbconfig = [
-  // '10.10.3.11:30011',
-  // '10.10.4.12:30012',
-//   '127.0.0.1:27017',
-   '10.10.3.195:27017',
-];
-
+const privateKey = fs.readFileSync('./_key/survey', 'utf8');
 
 const queueServerId = 'Lambda';
-
 
 const COLLECTION = {
   queues: 'queues',
@@ -52,13 +46,11 @@ const within = (date, minutes) => {
   return date && limit < date.getTime();
 };
 
-const exec = ({ db, TYPE, job_exec }, callback) => {
-
-  const params = {};
+const exec = (params, { TYPE, job_exec }, callback) => {
 
   async.waterfall([
     (next) => {
-      params.db = db.db(config.db.survey);
+      params.db = params.mongo.db(config.db.survey);
 
       // create index
       const index = [['type', 1], ['status', 1], ['valid', 1]];
@@ -178,23 +170,62 @@ exports.handler = (event, context, callback) => {
   // ジョブの処理はコレ！
   const job_exec = require('./jobs/' + TYPE);
 
-  connect(dbconfig, db => {
-    if (!db) {
-      return context.fail('Cant connect DB.');
-    } else {
-      exec({ db, TYPE, job_exec }, err => {
-        // close しないとプロセスが終了しない
-        db.close();
+  const params = {
+    // クロスコンパイルが必要なモジュールはbinに置いておく
+    bin: `${__dirname}/bin/${os.type()}`
+  };
 
-        console.log('finished');
-        if (err) {
-          console.log('fail');
-          return context.fail(err);
+  const ursa = require(`${params.bin}/node_modules/ursa`);
+  params.privateKey = ursa.createPrivateKey(privateKey);
+
+  async.waterfall([
+    next => {
+      if (os.type() === 'Darwin') {
+        // Macなら開発だろうからローカルDBに接続する
+        params.config = ['127.0.0.1:27017'];
+        next(null);
+      } else {
+        const Bucket = 'jp.co.dreamarts.jcomsurvey-stg';
+        const s3 = new aws.S3({ params: { Bucket } });
+        const Key = 'mongo_config.json';
+        s3.getObject({ Key }, (err, data) => {
+          if (err) {
+            next(err);
+          } else {
+            params.config = JSON.parse(data.Body);
+            next();
+          }
+        });
+      }
+    },
+    next => {
+      connect(params.config, mongo => {
+        if (!mongo) {
+          next('Cant connect mongo DB.');
         } else {
-          console.log('succeed');
-          return context.succeed();
+          params.mongo = mongo;
+          next(null);
         }
       });
+    },
+    next => {
+      exec(params, { TYPE, job_exec }, err => {
+        next(err);
+      });
+    },
+  ], err => {
+    if (params.mongo) {
+      // close しないとプロセスが終了しない
+      params.mongo.close();
+    }
+
+    console.log('finished');
+    if (err) {
+      console.log('fail');
+      return context.fail(err);
+    } else {
+      console.log('succeed');
+      return context.succeed();
     }
   });
 };

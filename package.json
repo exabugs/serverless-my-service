@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "deploy": "serverless deploy -v",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,7 +15,6 @@
     "moment-timezone": "^0.5.13",
     "mongodb": "^2.2.25",
     "underscore": "^1.8.3",
-    "ursa": "^0.9.4",
     "xlsx": "^0.9.9"
   }
 }
