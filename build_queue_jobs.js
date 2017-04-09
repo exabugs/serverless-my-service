@@ -109,10 +109,13 @@ const exec = (params, { TYPE, job_exec }, callback) => {
     // 3. キュー書き戻し
     (next) => {
       const queues = params.db.collection(COLLECTION.queues);
+      const queue = params.queue;
+      const now = new Date();
       const data = {
         status: params.err ? STATUS.FAILED : STATUS.DONE,
-        endTime: new Date(),
+        endTime: now,
         output: params.output,
+        duration: now.getTime() - queue.startTime.getTime(),
       };
       const _id = params.queue._id;
       queues.updateOne({ _id }, { $set: data }, err => {
@@ -170,13 +173,14 @@ exports.handler = (event, context, callback) => {
   // ジョブの処理はコレ！
   const job_exec = require('./jobs/' + TYPE);
 
-  const params = {
-    // クロスコンパイルが必要なモジュールはbinに置いておく
-    bin: `${__dirname}/bin/${os.type()}`
-  };
+  // クロスコンパイルが必要なモジュールはbinに置いておく
+  const bin = `${__dirname}/bin/${os.type()}`;
+  const ursa = require(`${bin}/node_modules/ursa`);
 
-  const ursa = require(`${params.bin}/node_modules/ursa`);
-  params.privateKey = ursa.createPrivateKey(privateKey);
+  // プライベートキー
+  const privateKey = ursa.createPrivateKey(privateKey);
+
+  const params = { bin, privateKey };
 
   async.waterfall([
     next => {
