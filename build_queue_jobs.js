@@ -6,7 +6,7 @@ const os = require('os');
 const fs = require('fs');
 const config = require('./config');
 
-const privateKey = fs.readFileSync('./_key/survey', 'utf8');
+const privateKeyData = fs.readFileSync('./_key/survey', 'utf8');
 
 const queueServerId = 'Lambda';
 
@@ -178,7 +178,7 @@ exports.handler = (event, context, callback) => {
   const ursa = require(`${bin}/node_modules/ursa`);
 
   // プライベートキー
-  const privateKey = ursa.createPrivateKey(privateKey);
+  const privateKey = ursa.createPrivateKey(privateKeyData);
 
   const params = { bin, privateKey };
 
